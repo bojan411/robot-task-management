@@ -1,0 +1,34 @@
+[project]
+name = "robot-task-management"
+version = "0.1.0"
+description = "A Flask REST API robot task management web service"
+authors = [
+    {name = "Bojan Ključević",email = "bojank.eng@outlook.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+
+[tool.poetry]
+packages = [{include = "robot_task_management", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+flask = "^3.1.0"
+flask-restx = "^1.3.0"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.1.0"
+flask-marshmallow = "^1.3.0"
+marshmallow-sqlalchemy = "^1.4.1"
+psycopg2-binary = "^2.9.6"
+gunicorn = "^23.0.0"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+factory-boy = "^3.3.3"
+ruff = "^0.11.1"
+pre-commit = "^4.2.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
