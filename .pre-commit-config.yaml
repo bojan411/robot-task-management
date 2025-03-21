@@ -9,5 +9,6 @@ repos:
     -   id: ruff
         types_or: [ python, pyi ]
         args: [ --fix ]
+        exclude: models
     -   id: ruff-format
         types_or: [ python, pyi ]

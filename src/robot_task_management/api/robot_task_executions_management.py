@@ -1,5 +1,6 @@
 from flask import request, Response
 from flask_restx import Namespace, Resource, fields, reqparse
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from robot_task_management.flask_apps import sa
@@ -48,14 +49,14 @@ robot_task_executions_filter.add_argument(
 )
 
 
-@robot_task_executions_api.route("/robot_task_executions")
+@robot_task_executions_api.route("/")
 class RobotTaskExecutionsResource(Resource):
     @robot_task_executions_api.doc("list_executions")
     @robot_task_executions_api.expect(robot_task_executions_filter)
     def get(self):
         query = apply_filters(robot_task_executions_filter)
 
-        robot_task_executions = query.all()
+        robot_task_executions = sa.session.execute(query).scalars().all()
 
         return robots_task_executions_schema.dump(robot_task_executions)
 
@@ -65,8 +66,8 @@ class RobotTaskExecutionsResource(Resource):
     def post(self):
         execution_data = request.json
         try:
-            Robots.query.get_or_404(execution_data["robot_id"])
-            RobotTasks.query.get_or_404(execution_data["task_id"])
+            sa.get_or_404(Robots, execution_data["robot_id"])
+            sa.get_or_404(RobotTasks, execution_data["task_id"])
 
             execution = robot_task_execution_schema.load(execution_data)
             sa.session.add(execution)
@@ -80,14 +81,14 @@ class RobotTaskExecutionsResource(Resource):
             robot_task_executions_api.abort(400, str(e))
 
 
-@robot_task_executions_api.route("/robot_task_executions/csv")
+@robot_task_executions_api.route("/csv")
 class RobotTaskExecutionsExportResource(Resource):
     @robot_task_executions_api.doc("export_executions")
     @robot_task_executions_api.expect(robot_task_executions_filter)
     def get(self):
         query = apply_filters(robot_task_executions_filter)
 
-        robot_task_executions = query.all()
+        robot_task_executions = sa.session.execute(query).scalars().all()
 
         csv_data = generate_csv(robot_task_executions)
         return Response(
@@ -102,20 +103,20 @@ class RobotTaskExecutionsExportResource(Resource):
 def apply_filters(robot_task_executions_filter):
     args = robot_task_executions_filter.parse_args()
 
-    query = RobotTaskExecutions.query
+    query = select(RobotTaskExecutions)
 
     if args.robot_id:
-        query = query.filter(RobotTaskExecutions.robot_id == args.robot_id)
+        query = query.where(RobotTaskExecutions.robot_id == args.robot_id)
 
     if args.robot_type_id:
-        query = query.join(Robots).filter(Robots.robot_type_id == args.robot_type_id)
+        query = query.join(Robots).where(Robots.robot_type_id == args.robot_type_id)
 
     if args.robot_task_id:
-        query = query.filter(RobotTaskExecutions.task_id == args.task_id)
+        query = query.where(RobotTaskExecutions.task_id == args.robot_task_id)
 
     if args.robot_task_type_id:
-        query = query.join(RobotTasks).filter(
-            RobotTasks.task_type_id == args.task_type_id
+        query = query.join(RobotTasks).where(
+            RobotTasks.task_type_id == args.robot_task_type_id
         )
 
     return query

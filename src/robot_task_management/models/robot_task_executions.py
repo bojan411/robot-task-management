@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 
 from robot_task_management.flask_apps import sa
-from robot_task_management.models import TimestampedModel
-from robot_task_management.models.robots import Robots
-from robot_task_management.models.robot_tasks import RobotTasks
+from robot_task_management.models.base import TimestampedModel
 
 
 class RobotTaskExecutions(sa.Model, TimestampedModel):
@@ -13,5 +11,5 @@ class RobotTaskExecutions(sa.Model, TimestampedModel):
     task_id: Mapped[int] = mapped_column(
         sa.ForeignKey("robot_tasks.id"), nullable=False
     )
-    robot: Mapped[Robots] = sa.relationship(back_populates="robot_task_executions")
-    task: Mapped[RobotTasks] = sa.relationship(back_populates="robot_task_executions")
+    robot: Mapped["Robots"] = sa.relationship(back_populates="robot_task_executions")
+    task: Mapped["RobotTasks"] = sa.relationship(back_populates="robot_task_executions")

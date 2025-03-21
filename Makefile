@@ -1,4 +1,4 @@
-.PHONY: deps lint test run build app teardown seed-db reset-db
+.PHONY: deps lint test run build app seeded-app teardown seed-db reset-db
 
 deps:
 	poetry install
@@ -17,6 +17,9 @@ build:
 
 app:
 	docker compose up -d
+
+seeded-app:
+	docker compose up -d seed
 
 teardown:
 	docker compose down

@@ -2,12 +2,9 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 
-from robot_task_management.flask_apps import sa, migrate, ma, api
-from robot_task_management.api.robots_management import robots_api
-from robot_task_management.api.robot_tasks_management import robot_tasks_api
-from robot_task_management.api.robot_task_executions_management import (
-    robot_task_executions_api,
-)
+from .flask_apps import sa, ma, migrate, restx_api
+from .api import robots_api, robot_tasks_api, robot_task_executions_api
+
 
 load_dotenv()
 
@@ -20,11 +17,11 @@ def create_app(is_testing=True):
     sa.init_app(app)
     migrate.init_app(app, sa)
     ma.init_app(app)
-    api.init_app(app)
+    restx_api.init_app(app)
 
-    api.add_namespace(robots_api)
-    api.add_namespace(robot_tasks_api)
-    api.add_namespace(robot_task_executions_api)
+    restx_api.add_namespace(robots_api)
+    restx_api.add_namespace(robot_tasks_api)
+    restx_api.add_namespace(robot_task_executions_api)
 
     with app.app_context():
         sa.create_all()

@@ -37,7 +37,6 @@ def seed_db():
         robot = Robots(
             name=f"Robot-{i:03d}",
             robot_type_id=robot_type.id,
-            status="active" if random.random() > 0.2 else "inactive",
         )
         robots.append(robot)
     sa.session.add_all(robots)
@@ -60,18 +59,17 @@ def seed_db():
     for task_type in task_types:
         for i in range(1, 6):
             if task_type.name == "Transportation":
-                name = f"Transport items from {random.choice(locations)} to {random.choice(locations)}"
+                name = f"Transport items from {random.choice(locations)} to {random.choice(locations)} {i}"
             elif task_type.name == "Charging":
-                name = f"Charge at {random.choice(locations)}"
+                name = f"Charge at {random.choice(locations)} {i}"
             elif task_type.name == "Parking":
-                name = f"Park at {random.choice(locations)}"
+                name = f"Park at {random.choice(locations)} {i}"
             elif task_type.name == "Maintenance":
-                name = f"Perform maintenance at {random.choice(locations)}"
+                name = f"Perform maintenance at {random.choice(locations)} {i}"
 
             task = RobotTasks(
                 name=name,
                 task_type_id=task_type.id,
-                priority=random.choice(["low", "medium", "high"]),
             )
             tasks.append(task)
     sa.session.add_all(tasks)

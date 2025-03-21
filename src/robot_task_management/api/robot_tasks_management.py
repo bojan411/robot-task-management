@@ -43,12 +43,12 @@ robot_task_type_schema = RobotTaskTypeSchema()
 robot_task_types_schema = RobotTaskTypeSchema(many=True)
 
 
-@robot_tasks_api.route("/robot_tasks")
+@robot_tasks_api.route("/")
 class RobotTasksResource(Resource):
     @robot_tasks_api.doc("list_tasks")
     @robot_tasks_api.marshal_list_with(task_model)
     def get(self):
-        tasks = RobotTasks.query.all()
+        tasks = sa.session.execute(sa.select(RobotTasks)).scalars().all()
         return robot_tasks_schema.dump(tasks)
 
     @robot_tasks_api.doc("create_task")
@@ -57,7 +57,7 @@ class RobotTasksResource(Resource):
     def post(self):
         task_data = request.json
         try:
-            RobotTasks.query.get_or_404(task_data["task_type_id"])
+            sa.get_or_404(RobotTaskType, task_data["task_type_id"])
 
             task = robot_task_schema.load(task_data)
             sa.session.add(task)
@@ -71,25 +71,25 @@ class RobotTasksResource(Resource):
             robot_tasks_api.abort(400, str(e))
 
 
-@robot_tasks_api.route("/robot_tasks/<int:id>")
+@robot_tasks_api.route("/<int:id>")
 @robot_tasks_api.param("id", "Robot task unique identifier")
 @robot_tasks_api.response(404, "Robot task not found")
 class RobotTasksDetailResource(Resource):
     @robot_tasks_api.doc("get_task")
     @robot_tasks_api.marshal_with(task_model)
     def get(self, id):
-        task = RobotTasks.query.get_or_404(id)
+        task = sa.get_or_404(RobotTasks, id)
         return robot_task_schema.dump(task)
 
     @robot_tasks_api.doc("update_task")
     @robot_tasks_api.expect(task_model)
     @robot_tasks_api.marshal_with(task_model)
     def put(self, id):
-        task = RobotTasks.query.get_or_404(id)
+        task = sa.get_or_404(RobotTasks, id)
         task_data = request.json
         try:
             if "task_type_id" in task_data:
-                RobotTasks.query.get_or_404(task_data["task_type_id"])
+                sa.get_or_404(RobotTasks, task_data["task_type_id"])
                 task.task_type_id = task_data["task_type_id"]
 
             if "name" in task_data:
@@ -104,7 +104,7 @@ class RobotTasksDetailResource(Resource):
     @robot_tasks_api.doc("delete_task")
     @robot_tasks_api.response(204, "Robot task deleted")
     def delete(self, id):
-        task = RobotTasks.query.get_or_404(id)
+        task = sa.get_or_404(RobotTasks, id)
         try:
             sa.session.delete(task)
             sa.session.commit()
@@ -117,12 +117,12 @@ class RobotTasksDetailResource(Resource):
             robot_tasks_api.abort(400, str(e))
 
 
-@robot_tasks_api.route("/robot_tasks/types")
+@robot_tasks_api.route("/types")
 class RobotTaskTypeResource(Resource):
     @robot_tasks_api.doc("list_task_types")
     @robot_tasks_api.marshal_list_with(task_type_model)
     def get(self):
-        task_types = RobotTaskType.query.all()
+        task_types = sa.session.execute(sa.select(RobotTaskType)).scalars().all()
         return robot_task_types_schema.dump(task_types)
 
     @robot_tasks_api.doc("create_task_type")
@@ -143,21 +143,21 @@ class RobotTaskTypeResource(Resource):
             robot_tasks_api.abort(400, str(e))
 
 
-@robot_tasks_api.route("/robot_tasks/types/<int:id>")
+@robot_tasks_api.route("/types/<int:id>")
 @robot_tasks_api.param("id", "Robot task type unique identifier")
 @robot_tasks_api.response(404, "Robot task type not found")
 class RobotTaskTypeDetailResource(Resource):
     @robot_tasks_api.doc("get_task_type")
     @robot_tasks_api.marshal_with(task_type_model)
     def get(self, id):
-        task_type = RobotTaskType.query.get_or_404(id)
+        task_type = sa.get_or_404(RobotTaskType, id)
         return robot_task_type_schema.dump(task_type)
 
     @robot_tasks_api.doc("update_task_type")
     @robot_tasks_api.expect(task_type_model)
     @robot_tasks_api.marshal_with(task_type_model)
     def put(self, id):
-        task_type = RobotTaskType.query.get_or_404(id)
+        task_type = sa.get_or_404(RobotTaskType, id)
         task_type_data = request.json
         try:
             task_type.name = task_type_data["name"]
@@ -173,7 +173,7 @@ class RobotTaskTypeDetailResource(Resource):
     @robot_tasks_api.doc("delete_task_type")
     @robot_tasks_api.response(204, "Robot task type deleted")
     def delete(self, id):
-        task_type = RobotTaskType.query.get_or_404(id)
+        task_type = sa.get_or_404(RobotTaskType, id)
         try:
             sa.session.delete(task_type)
             sa.session.commit()

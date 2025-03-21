@@ -36,12 +36,12 @@ robot_type_schema = RobotTypeSchema()
 robot_types_schema = RobotTypeSchema(many=True)
 
 
-@robots_api.route("/robots")
+@robots_api.route("/")
 class RobotsResource(Resource):
     @robots_api.doc("list_robots")
     @robots_api.marshal_list_with(robots_model)
     def get(self):
-        robots = Robots.query.all()
+        robots = sa.session.execute(sa.select(Robots)).scalars().all()
         return robots_schema.dump(robots)
 
     @robots_api.doc("create_robot")
@@ -49,8 +49,9 @@ class RobotsResource(Resource):
     @robots_api.marshal_with(robots_model, code=201)
     def post(self):
         robot_data = request.json
+
         try:
-            RobotType.query.get_or_404(robot_data["robot_type_id"])
+            sa.get_or_404(RobotType, robot_data["robot_type_id"])
 
             robot = robot_schema.load(robot_data)
             sa.session.add(robot)
@@ -64,25 +65,25 @@ class RobotsResource(Resource):
             robots_api.abort(400, str(e))
 
 
-@robots_api.route("/robots/<int:id>")
+@robots_api.route("/<int:id>")
 @robots_api.param("id", "The robot identifier")
 @robots_api.response(404, "Robot not found")
 class RobotsDetailResource(Resource):
     @robots_api.doc("get_robot")
     @robots_api.marshal_with(robots_model)
     def get(self, id):
-        robot = Robots.query.get_or_404(id)
+        robot = sa.get_or_404(Robots, id)
         return robot_schema.dump(robot)
 
     @robots_api.doc("update_robot")
     @robots_api.expect(robots_model)
     @robots_api.marshal_with(robots_model)
     def put(self, id):
-        robot = Robots.query.get_or_404(id)
+        robot = sa.get_or_404(Robots, id)
         robot_data = request.json
         try:
             if "robot_type_id" in robot_data:
-                RobotType.query.get_or_404(robot_data["robot_type_id"])
+                sa.get_or_404(RobotType, robot_data["robot_type_id"])
                 robot.robot_type_id = robot_data["robot_type_id"]
 
             if "name" in robot_data:
@@ -97,7 +98,7 @@ class RobotsDetailResource(Resource):
     @robots_api.doc("delete_robot")
     @robots_api.response(204, "Robot deleted")
     def delete(self, id):
-        robot = Robots.query.get_or_404(id)
+        robot = sa.get_or_404(Robots, id)
         try:
             sa.session.delete(robot)
             sa.session.commit()
@@ -112,12 +113,12 @@ class RobotsDetailResource(Resource):
             robots_api.abort(400, str(e))
 
 
-@robots_api.route("/robots/types")
+@robots_api.route("/types")
 class RobotTypeResource(Resource):
     @robots_api.doc("list_robot_types")
     @robots_api.marshal_list_with(robot_type_model)
     def get(self):
-        robot_types = RobotType.query.all()
+        robot_types = sa.session.execute(sa.select(RobotType)).scalars().all()
         return robot_types_schema.dump(robot_types)
 
     @robots_api.doc("create_robot_type")
@@ -138,21 +139,21 @@ class RobotTypeResource(Resource):
             robots_api.abort(400, str(e))
 
 
-@robots_api.route("/robots/types/<int:id>")
+@robots_api.route("/types/<int:id>")
 @robots_api.param("id", "The robot type identifier")
 @robots_api.response(404, "Robot type not found")
 class RobotTypeDetailResource(Resource):
     @robots_api.doc("get_robot_type")
     @robots_api.marshal_with(robot_type_model)
     def get(self, id):
-        robot_type = RobotType.query.get_or_404(id)
+        robot_type = sa.get_or_404(RobotType, id)
         return robot_type_schema.dump(robot_type)
 
     @robots_api.doc("update_robot_type")
     @robots_api.expect(robot_type_model)
     @robots_api.marshal_with(robot_type_model)
     def put(self, id):
-        robot_type = RobotType.query.get_or_404(id)
+        robot_type = sa.get_or_404(RobotType, id)
         robot_type_data = request.json
         try:
             robot_type.name = robot_type_data["name"]
@@ -168,7 +169,7 @@ class RobotTypeDetailResource(Resource):
     @robots_api.doc("delete_robot_type")
     @robots_api.response(204, "Robot type deleted")
     def delete(self, id):
-        robot_type = RobotType.query.get_or_404(id)
+        robot_type = sa.get_or_404(RobotType, id)
         try:
             sa.session.delete(robot_type)
             sa.session.commit()

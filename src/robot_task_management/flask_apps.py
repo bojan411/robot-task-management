@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
 sa = SQLAlchemy(model_class=Base)
 migrate = Migrate()
 ma = Marshmallow()
-api = Api(
+restx_api = Api(
     title="Robot task management API",
     version="0.1.0",
     description="API for managing robots",

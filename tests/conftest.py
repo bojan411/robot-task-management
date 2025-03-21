@@ -2,13 +2,24 @@ import pytest
 from robot_task_management import create_app
 from robot_task_management.flask_apps import sa
 from tests.factories import (
-    BaseFactory,
     RobotTypeFactory,
     RobotsFactory,
     RobotTaskTypeFactory,
     RobotTasksFactory,
     RobotTaskExecutionsFactory,
+    init_factories,
 )
+
+
+@pytest.fixture
+def app_ctx(app):
+    with app.app_context():
+        yield
+
+
+@pytest.fixture
+def db():
+    yield sa
 
 
 @pytest.fixture
@@ -17,8 +28,7 @@ def app():
 
     with app.app_context():
         sa.create_all()
-
-    BaseFactory._meta.sqlalchemy_session = sa.session
+        init_factories(sa.session)
 
     yield app
 
@@ -32,30 +42,30 @@ def client(app):
 
 
 @pytest.fixture
-def robot_type(app):
-    with app.app_context():
-        return RobotTypeFactory(name="Test robot type")
+@pytest.mark.usefixtures("app_ctx")
+def robot_type():
+    return RobotTypeFactory(name="Test robot type")
 
 
 @pytest.fixture
-def robot(app, robot_type):
-    with app.app_context():
-        return RobotsFactory(name="Test robot", robot_type=robot_type)
+@pytest.mark.usefixtures("app_ctx")
+def robot(robot_type):
+    return RobotsFactory(name="Test robot", robot_type=robot_type)
 
 
 @pytest.fixture
-def robot_task_type(app):
-    with app.app_context():
-        return RobotTaskTypeFactory(name="Test task type")
+@pytest.mark.usefixtures("app_ctx")
+def robot_task_type():
+    return RobotTaskTypeFactory(name="Test task type")
 
 
 @pytest.fixture
-def robot_task(app, robot_task_type):
-    with app.app_context():
-        return RobotTasksFactory(name="Test task", task_type=robot_task_type)
+@pytest.mark.usefixtures("app_ctx")
+def robot_task(robot_task_type):
+    return RobotTasksFactory(name="Test task", task_type=robot_task_type)
 
 
 @pytest.fixture
-def robot_task_execution(app, robot, robot_task):
-    with app.app_context():
-        return RobotTaskExecutionsFactory(robot=robot, task=robot_task)
+@pytest.mark.usefixtures("app_ctx")
+def robot_task_execution(robot, robot_task):
+    return RobotTaskExecutionsFactory(robot=robot, task=robot_task)

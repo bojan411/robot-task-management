@@ -1,17 +1,5 @@
-from zoneinfo import ZoneInfo
-from datetime import datetime
-from sqlalchemy import DateTime
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import TIMESTAMP
-
-
-class TimestampedModel(object):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    created_at: Mapped[TIMESTAMP] = mapped_column(
-        DateTime(timezone=True), default=datetime.now(tz=ZoneInfo("UTC"))
-    )
-    updated_at: Mapped[TIMESTAMP] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.now(tz=ZoneInfo("UTC")),
-        onupdate=datetime.now(tz=ZoneInfo("UTC")),
-    )
+from .robots import Robots as Robots
+from .robot_type import RobotType as RobotType
+from .robot_tasks import RobotTasks as RobotTasks
+from .robot_task_type import RobotTaskType as RobotTaskType
+from .robot_task_executions import RobotTaskExecutions as RobotTaskExecutions
